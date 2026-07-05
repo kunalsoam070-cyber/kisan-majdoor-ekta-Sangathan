@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - किसान मजदूर एकता संगठन</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+:root{
+  --green:#13854b;--darkgreen:#0b5f33;--saffron:#ff9933;
+  --bg:#f4f7f5;--card:#ffffff;--border:#e4e9e6;--danger:#d9463b;--text:#1c2622;--muted:#6b7770;
+}
+body{background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ---------- Login ---------- */
+#login-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--darkgreen),var(--green) 55%,#0e7042);
+  padding:20px;
+}
+.login-box{
+  background:white;padding:45px 38px;border-radius:22px;max-width:400px;width:100%;
+  box-shadow:0 25px 60px rgba(0,0,0,0.25);
+}
+.login-box h1{font-size:22px;color:var(--darkgreen);margin-bottom:6px;font-weight:800;}
+.login-box p.sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#444;}
+.field input, .field textarea, .field select{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;
+  outline:none;transition:0.2s;background:#fbfcfb;
+}
+.field input:focus, .field textarea:focus, .field select:focus{border-color:var(--green);background:white;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 22px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14.5px;
+  transition:0.2s;font-family:inherit;
+}
+.btn-primary{background:var(--green);color:white;width:100%;padding:13px;}
+.btn-primary:hover{background:var(--darkgreen);}
+.btn-danger{background:#fdeceb;color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:white;}
+.btn-ghost{background:#eef3f0;color:var(--darkgreen);}
+.btn-ghost:hover{background:#dfe9e3;}
+#login-error{color:var(--danger);font-size:13.5px;margin-top:10px;min-height:18px;}
+
+/* ---------- App shell ---------- */
+#app{display:none;min-height:100vh;}
+.topbar{
+  background:white;border-bottom:1px solid var(--border);padding:14px 26px;
+  display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;
+}
+.topbar h1{font-size:17px;color:var(--darkgreen);font-weight:800;}
+.topbar .who{font-size:13px;color:var(--muted);}
+.layout{display:flex;max-width:1300px;margin:auto;}
+aside{width:220px;padding:24px 14px;flex-shrink:0;}
+aside button{
+  width:100%;text-align:left;padding:11px 14px;border:none;background:transparent;border-radius:10px;
+  font-size:14.5px;font-weight:600;color:#4b5751;cursor:pointer;margin-bottom:4px;transition:0.15s;
+  display:flex;align-items:center;gap:10px;
+}
+aside button:hover{background:#eaf2ee;}
+aside button.active{background:var(--green);color:white;}
+main{flex:1;padding:26px;min-width:0;}
+
+.panel{display:none;}
+.panel.active{display:block;}
+.panel-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.panel-header h2{font-size:22px;color:var(--darkgreen);}
+.panel-header p{color:var(--muted);font-size:13.5px;margin-top:4px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px;}
+.card h3{font-size:15px;margin-bottom:16px;color:var(--darkgreen);}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr;} aside{display:none;} .layout{flex-direction:column;} main{padding:16px;}
+  .mobile-tabs{display:flex;overflow-x:auto;gap:8px;padding:12px 16px;background:white;border-bottom:1px solid var(--border);}
+  .mobile-tabs button{white-space:nowrap;padding:9px 16px;border-radius:50px;border:1px solid var(--border);background:white;font-weight:600;font-size:13.5px;}
+  .mobile-tabs button.active{background:var(--green);color:white;border-color:var(--green);}
+}
+@media(min-width:701px){.mobile-tabs{display:none;}}
+
+.item-row{
+  display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:14px;margin-bottom:10px;background:#fbfcfb;
+}
+.item-row img{width:70px;height:70px;object-fit:cover;border-radius:10px;background:#eee;flex-shrink:0;}
+.item-row .info{flex:1;min-width:0;}
+.item-row .info h4{font-size:15px;color:var(--text);margin-bottom:3px;}
+.item-row .info p{font-size:13px;color:var(--muted);line-height:1.5;max-height:40px;overflow:hidden;}
+.item-row .actions{display:flex;gap:8px;flex-shrink:0;}
+.item-row .actions button{padding:8px 12px;font-size:13px;}
+
+.upload-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.upload-row input[type=file]{flex:1;min-width:180px;}
+.img-preview{width:60px;height:60px;border-radius:10px;object-fit:cover;background:#eee;display:none;}
+.upload-status{font-size:12.5px;color:var(--muted);}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--darkgreen);color:white;padding:14px 22px;
+  border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  z-index:2000;opacity:0;transform:translateY(20px);transition:0.3s;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.error{background:var(--danger);}
+
+.empty{color:var(--muted);text-align:center;padding:30px;font-size:14px;}
+.hint{background:#fff8e8;border:1px solid #ffe6a8;color:#7a5c00;font-size:13px;padding:12px 14px;border-radius:10px;margin-bottom:16px;line-height:1.6;}
+.small-btn{font-size:12.5px;padding:6px 10px;}
+label.checkbox{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#444;margin-bottom:16px;}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>🔐 Admin Login</h1>
+    <p class="sub">किसान मजदूर एकता संगठन — केवल अधिकृत सदस्यों हेतु</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="admin@example.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="login-btn">Login</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div class="topbar">
+    <h1>किसान मजदूर एकता संगठन — Admin Panel</h1>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="who" id="who-email"></span>
+      <button class="btn btn-ghost small-btn" id="logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div class="mobile-tabs" id="mobile-tabs"></div>
+
+  <div class="layout">
+    <aside id="sidebar"></aside>
+    <main>
+
+      <!-- Dashboard -->
+      <section class="panel" id="panel-dashboard">
+        <div class="panel-header"><div><h2>डैशबोर्ड</h2><p>वेबसाइट की सामग्री यहां से प्रबंधित करें</p></div></div>
+        <div class="grid-2">
+          <div class="card"><h3>📸 गैलरी फ़ोटो</h3><p id="count-gallery" style="font-size:28px;font-weight:800;color:var(--darkgreen);">–</p></div>
+          <div class="card"><h3>🎥 वीडियो</h3><p id="count-videos" style="font-size:28px;font-weight:800;color:var(--darkgreen);">–</p></div>
+          <div class="card"><h3>📰 लेख</h3><p id="count-articles" style="font-size:28px;font-weight:800;color:var(--darkgreen);">–</p></div>
+          <div class="card"><h3>🧑‍🤝‍🧑 पदाधिकारी</h3><p id="count-leaders" style="font-size:28px;font-weight:800;color:var(--darkgreen);">–</p></div>
+        </div>
+        <div class="hint">
+          पहली बार इस्तेमाल कर रहे हैं? नीचे "Setup Guide" देखें (नीचे scroll करें) — Firebase Authentication, Firestore Rules और free ImgBB API key सेट करने के step हैं। सब कुछ 100% free है।
+        </div>
+      </section>
+
+      <!-- Gallery -->
+      <section class="panel" id="panel-gallery">
+        <div class="panel-header"><div><h2>📸 गैलरी फ़ोटो</h2><p>वेबसाइट के "Gallery" सेक्शन में दिखने वाली तस्वीरें</p></div></div>
+        <div class="card">
+          <h3>नई फ़ोटो जोड़ें</h3>
+          <div class="field"><label>तस्वीर अपलोड करें</label>
+            <div class="upload-row">
+              <input type="file" id="gallery-file" accept="image/*">
+              <img class="img-preview" id="gallery-preview">
+            </div>
+            <div class="upload-status" id="gallery-upload-status"></div>
+          </div>
+          <div class="field"><label>या सीधे Image URL डालें (वैकल्पिक)</label><input type="text" id="gallery-url" placeholder="https://..."></div>
+          <div class="field"><label>शीर्षक (Title)</label><input type="text" id="gallery-title" placeholder="जैसे: राष्ट्रीय एकता कार्यक्रम"></div>
+          <div class="field"><label>विवरण (Description)</label><textarea id="gallery-desc" rows="2" placeholder="छोटा विवरण लिखें"></textarea></div>
+          <button class="btn btn-primary" id="gallery-add-btn" style="width:auto;">+ जोड़ें</button>
+        </div>
+        <div class="card"><h3>मौजूदा फ़ोटो</h3><div id="gallery-list"><div class="empty">Loading...</div></div></div>
+      </section>
+
+      <!-- Videos -->
+      <section class="panel" id="panel-videos">
+        <div class="panel-header"><div><h2>🎥 वीडियो गैलरी</h2><p>YouTube वीडियो जोड़ें या हटाएं</p></div></div>
+        <div class="card">
+          <h3>नया वीडियो जोड़ें</h3>
+          <div class="field"><label>YouTube Link या Video ID</label><input type="text" id="video-id" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX या सिर्फ ID"></div>
+          <div class="field"><label>शीर्षक (Title)</label><input type="text" id="video-title" placeholder="जैसे: संगठन अभियान वीडियो"></div>
+          <div class="field"><label>विवरण (Description)</label><textarea id="video-desc" rows="2"></textarea></div>
+          <button class="btn btn-primary" id="video-add-btn" style="width:auto;">+ जोड़ें</button>
+        </div>
+        <div class="card"><h3>मौजूदा वीडियो</h3><div id="video-list"><div class="empty">Loading...</div></div></div>
+      </section>
+
+      <!-- Articles -->
+      <section class="panel" id="panel-articles">
+        <div class="panel-header"><div><h2>📰 लेख / समाचार</h2><p>वेबसाइट के "News" सेक्शन में दिखने वाले लेख</p></div></div>
+        <div class="card">
+          <h3>नया लेख जोड़ें</h3>
+          <div class="field"><label>कवर तस्वीर (वैकल्पिक)</label>
+            <div class="upload-row">
+              <input type="file" id="article-file" accept="image/*">
+              <img class="img-preview" id="article-preview">
+            </div>
+            <div class="upload-status" id="article-upload-status"></div>
+          </div>
+          <div class="field"><label>या Image URL</label><input type="text" id="article-url" placeholder="https://..."></div>
+          <div class="field"><label>तारीख़ (वैकल्पिक)</label><input type="text" id="article-date" placeholder="जैसे: 5 जुलाई 2026"></div>
+          <div class="field"><label>शीर्षक</label><input type="text" id="article-title" placeholder="लेख का शीर्षक"></div>
+          <div class="field"><label>पूरा लेख / सारांश</label><textarea id="article-content" rows="4" placeholder="लेख यहां लिखें"></textarea></div>
+          <button class="btn btn-primary" id="article-add-btn" style="width:auto;">+ जोड़ें</button>
+        </div>
+        <div class="card"><h3>मौजूदा लेख</h3><div id="article-list"><div class="empty">Loading...</div></div></div>
+      </section>
+
+      <!-- Leaders -->
+      <section class="panel" id="panel-leaders">
+        <div class="panel-header"><div><h2>🧑‍🤝‍🧑 संगठन पदाधिकारी</h2><p>नेतृत्व टीम की प्रोफाइल जोड़ें या हटाएं</p></div></div>
+        <div class="card">
+          <h3>नया पदाधिकारी जोड़ें</h3>
+          <div class="field"><label>फ़ोटो अपलोड करें</label>
+            <div class="upload-row">
+              <input type="file" id="leader-file" accept="image/*">
+              <img class="img-preview" id="leader-preview">
+            </div>
+            <div class="upload-status" id="leader-upload-status"></div>
+          </div>
+          <div class="field"><label>या Image URL</label><input type="text" id="leader-url" placeholder="https://..."></div>
+          <div class="field"><label>नाम</label><input type="text" id="leader-name" placeholder="जैसे: ठाकुर अजय सोम"></div>
+          <div class="field"><label>पदनाम</label><input type="text" id="leader-post" placeholder="जैसे: प्रदेश अध्यक्ष"></div>
+          <button class="btn btn-primary" id="leader-add-btn" style="width:auto;">+ जोड़ें</button>
+        </div>
+        <div class="card"><h3>मौजूदा पदाधिकारी</h3><div id="leader-list"><div class="empty">Loading...</div></div></div>
+      </section>
+
+      <!-- Stats -->
+      <section class="panel" id="panel-stats">
+        <div class="panel-header"><div><h2>📊 आंकड़े (Stats Counter)</h2><p>होमपेज पर दिखने वाले counters अपडेट करें</p></div></div>
+        <div class="card">
+          <div class="grid-2">
+            <div class="field"><label>जुड़े हुए सदस्य</label><input type="number" id="stat-users"></div>
+            <div class="field"><label>ग्रामीण अभियान</label><input type="number" id="stat-villages"></div>
+          </div>
+          <div class="field"><label>जनहित बैठकें</label><input type="number" id="stat-meetings"></div>
+          <button class="btn btn-primary" id="stats-save-btn" style="width:auto;">Save Stats</button>
+        </div>
+      </section>
+
+      <!-- Setup Guide -->
+      <section class="panel" id="panel-setup">
+        <div class="panel-header"><div><h2>⚙️ Setup Guide (100% Free)</h2><p>पहली बार इस्तेमाल से पहले ये 3 step एक बार करें</p></div></div>
+        <div class="card">
+          <h3>1️⃣ Firebase Authentication चालू करें</h3>
+          <p style="font-size:14px;line-height:1.9;color:#444;">
+            Firebase Console (console.firebase.google.com) → अपना प्रोजेक्ट "kisan-majdoor-ekta-sangathan" खोलें → Build → Authentication → Get Started → Sign-in method में "Email/Password" चालू करें → Users tab में जाकर अपना admin email/password add करें। यह पूरी तरह free है, कोई card नहीं चाहिए।
+          </p>
+        </div>
+        <div class="card">
+          <h3>2️⃣ Firestore Security Rules सेट करें</h3>
+          <p style="font-size:14px;line-height:1.9;color:#444;">
+            Firestore Database → Rules में जाकर नीचे दिया rule paste करें, ताकि सिर्फ logged-in admin ही डेटा बदल सके, बाकी सब सिर्फ पढ़ सकें:
+          </p>
+          <pre style="background:#0b1c12;color:#a8e6c0;padding:16px;border-radius:10px;font-size:12.5px;overflow-x:auto;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}</pre>
+        </div>
+        <div class="card">
+          <h3>3️⃣ Free Image Hosting (ImgBB) API Key</h3>
+          <p style="font-size:14px;line-height:1.9;color:#444;">
+            api.imgbb.com पर जाकर free account बनाएं और free API key लें (कोई card नहीं चाहिए)। नीचे box में key paste करके "Save" करें — यह आपके browser में ही सुरक्षित रहेगी।
+          </p>
+          <div class="field"><label>ImgBB API Key</label><input type="text" id="imgbb-key" placeholder="अपनी free ImgBB API key यहां paste करें"></div>
+          <button class="btn btn-primary" id="imgbb-save-btn" style="width:auto;">Save Key</button>
+          <p style="font-size:12.5px;color:var(--muted);margin-top:10px;">Key ना डालने पर भी आप हर फॉर्म में सीधे "Image URL" पेस्ट करके काम चला सकते हैं।</p>
+        </div>
+        <div class="card">
+          <h3>4️⃣ पुरानी वेबसाइट का डेटा एक बार Import करें (वैकल्पिक)</h3>
+          <p style="font-size:14px;line-height:1.9;color:#444;">
+            आपकी पुरानी hardcoded गैलरी तस्वीरें, वीडियो और आंकड़े नीचे बटन दबाकर एक क्लिक में Firestore में जोड़े जा सकते हैं (सिर्फ एक बार चलाएं, बार-बार क्लिक करने से डुप्लीकेट बन जाएंगे)।
+          </p>
+          <button class="btn btn-ghost" id="seed-btn">पुराना डेटा Import करें</button>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs, addDoc, deleteDoc, doc, setDoc, getDoc, orderBy, query, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAlp-qRYsoMpq2YlSsD3zy1xC0e45TJILg",
+  authDomain: "kisan-majdoor-ekta-sangathan-2.firebaseapp.com",
+  projectId: "kisan-majdoor-ekta-sangathan-2",
+  storageBucket: "kisan-majdoor-ekta-sangathan-2.firebasestorage.app",
+  messagingSenderId: "1058044104813",
+  appId: "1:1058044104813:web:e1fc35c4280816b6096f64"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ---------- Toast ---------- */
+function toast(msg, isError=false){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(()=> t.classList.remove('show'), 3200);
+}
+
+/* ---------- Auth ---------- */
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errBox = document.getElementById('login-error');
+  errBox.textContent = '';
+  if(!email || !password){ errBox.textContent = 'कृपया email और password दोनों भरें।'; return; }
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+  }catch(e){
+    errBox.textContent = 'Login असफल: सही email/password डालें, या पहले Firebase Console में admin user बनाएं (Setup Guide देखें)।';
+  }
+});
+
+document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('who-email').textContent = user.email;
+    loadAllCounts();
+    loadGallery(); loadVideos(); loadArticles(); loadLeaders(); loadStats();
+  }else{
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+/* ---------- Navigation ---------- */
+const tabs = [
+  {id:'dashboard', label:'🏠 डैशबोर्ड'},
+  {id:'gallery', label:'📸 गैलरी'},
+  {id:'videos', label:'🎥 वीडियो'},
+  {id:'articles', label:'📰 लेख'},
+  {id:'leaders', label:'🧑‍🤝‍🧑 पदाधिकारी'},
+  {id:'stats', label:'📊 आंकड़े'},
+  {id:'setup', label:'⚙️ Setup Guide'},
+];
+const sidebar = document.getElementById('sidebar');
+const mobileTabs = document.getElementById('mobile-tabs');
+tabs.forEach(t => {
+  const b1 = document.createElement('button'); b1.textContent = t.label; b1.dataset.tab = t.id;
+  b1.addEventListener('click', () => showTab(t.id));
+  sidebar.appendChild(b1);
+  const b2 = b1.cloneNode(true); b2.addEventListener('click', () => showTab(t.id));
+  mobileTabs.appendChild(b2);
+});
+function showTab(id){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('aside button, .mobile-tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+}
+showTab('dashboard');
+
+/* ---------- ImgBB key storage (in-memory, prefilled from a data doc for convenience) ---------- */
+let imgbbKey = '';
+document.getElementById('imgbb-save-btn').addEventListener('click', async () => {
+  imgbbKey = document.getElementById('imgbb-key').value.trim();
+  try{
+    await setDoc(doc(db,'settings','config'), { imgbbKey }, { merge:true });
+    toast('ImgBB key सुरक्षित कर दी गई।');
+  }catch(e){ toast('Key save नहीं हो पाई। Login/permission जांचें।', true); }
+});
+(async () => {
+  try{
+    const snap = await getDoc(doc(db,'settings','config'));
+    if(snap.exists() && snap.data().imgbbKey){
+      imgbbKey = snap.data().imgbbKey;
+      document.getElementById('imgbb-key').value = imgbbKey;
+    }
+  }catch(e){}
+})();
+
+async function uploadImage(file, statusElId, previewElId){
+  const statusEl = document.getElementById(statusElId);
+  const previewEl = document.getElementById(previewElId);
+  if(!file) return '';
+  previewEl.src = URL.createObjectURL(file);
+  previewEl.style.display = 'block';
+  if(!imgbbKey){
+    statusEl.textContent = '⚠️ ImgBB API key सेट नहीं है (Setup Guide देखें) — नीचे "Image URL" बॉक्स में सीधा link डालें।';
+    return '';
+  }
+  statusEl.textContent = 'अपलोड हो रहा है...';
+  try{
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body: formData });
+    const json = await res.json();
+    if(json.success){
+      statusEl.textContent = '✅ अपलोड हो गया।';
+      return json.data.url;
+    }else{
+      statusEl.textContent = '❌ अपलोड विफल: ' + (json.error?.message || 'unknown error');
+      return '';
+    }
+  }catch(e){
+    statusEl.textContent = '❌ अपलोड में समस्या। Image URL सीधे डालें।';
+    return '';
+  }
+}
+
+/* ---------- Generic collection helpers ---------- */
+async function getOrderedDocs(name){
+  try{
+    const q = query(collection(db,name), orderBy('order','asc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({id:d.id, ...d.data()}));
+  }catch(e){
+    const snap = await getDocs(collection(db,name));
+    return snap.docs.map(d => ({id:d.id, ...d.data()}));
+  }
+}
+async function nextOrder(name){
+  const items = await getOrderedDocs(name);
+  return items.length ? Math.max(...items.map(i => i.order||0)) + 1 : 1;
+}
+async function removeItem(name, id, reload){
+  if(!confirm('क्या आप वाकई इसे हटाना चाहते हैं?')) return;
+  try{
+    await deleteDoc(doc(db,name,id));
+    toast('हटा दिया गया।');
+    reload();
+    loadAllCounts();
+  }catch(e){ toast('हटाने में समस्या हुई।', true); }
+}
+
+/* ---------- Dashboard counts ---------- */
+async function loadAllCounts(){
+  for(const [name, elId] of [['gallery','count-gallery'],['videos','count-videos'],['articles','count-articles'],['leaders','count-leaders']]){
+    try{
+      const snap = await getDocs(collection(db,name));
+      document.getElementById(elId).textContent = snap.size;
+    }catch(e){ document.getElementById(elId).textContent = '–'; }
+  }
+}
+
+/* ---------- Gallery ---------- */
+document.getElementById('gallery-file').addEventListener('change', (e) => {
+  uploadImage(e.target.files[0], 'gallery-upload-status', 'gallery-preview').then(url => {
+    if(url) document.getElementById('gallery-url').value = url;
+  });
+});
+document.getElementById('gallery-add-btn').addEventListener('click', async () => {
+  const image = document.getElementById('gallery-url').value.trim();
+  const title = document.getElementById('gallery-title').value.trim();
+  const description = document.getElementById('gallery-desc').value.trim();
+  if(!image || !title){ toast('कृपया तस्वीर और शीर्षक दोनों दें।', true); return; }
+  try{
+    const order = await nextOrder('gallery');
+    await addDoc(collection(db,'gallery'), { image, title, description, order, createdAt: serverTimestamp() });
+    toast('फ़ोटो जोड़ी गई।');
+    document.getElementById('gallery-url').value=''; document.getElementById('gallery-title').value=''; document.getElementById('gallery-desc').value='';
+    document.getElementById('gallery-preview').style.display='none';
+    loadGallery(); loadAllCounts();
+  }catch(e){ toast('जोड़ने में समस्या हुई। Login जांचें।', true); }
+});
+async function loadGallery(){
+  const list = document.getElementById('gallery-list');
+  const items = await getOrderedDocs('gallery');
+  if(items.length===0){ list.innerHTML = '<div class="empty">अभी कोई फ़ोटो नहीं है।</div>'; return; }
+  list.innerHTML = items.map(i => `
+    <div class="item-row">
+      <img src="${i.image}">
+      <div class="info"><h4>${i.title||''}</h4><p>${i.description||''}</p></div>
+      <div class="actions"><button class="btn btn-danger" data-id="${i.id}">हटाएं</button></div>
+    </div>`).join('');
+  list.querySelectorAll('button').forEach(b => b.addEventListener('click', () => removeItem('gallery', b.dataset.id, loadGallery)));
+}
+
+/* ---------- Videos ---------- */
+function extractYtId(input){
+  if(!input) return '';
+  input = input.trim();
+  const m = input.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : input;
+}
+document.getElementById('video-add-btn').addEventListener('click', async () => {
+  const videoId = extractYtId(document.getElementById('video-id').value.trim());
+  const title = document.getElementById('video-title').value.trim();
+  const description = document.getElementById('video-desc').value.trim();
+  if(!videoId || !title){ toast('कृपया YouTube link/ID और शीर्षक दें।', true); return; }
+  try{
+    const order = await nextOrder('videos');
+    await addDoc(collection(db,'videos'), { videoId, title, description, order, createdAt: serverTimestamp() });
+    toast('वीडियो जोड़ा गया।');
+    document.getElementById('video-id').value=''; document.getElementById('video-title').value=''; document.getElementById('video-desc').value='';
+    loadVideos(); loadAllCounts();
+  }catch(e){ toast('जोड़ने में समस्या हुई। Login जांचें।', true); }
+});
+async function loadVideos(){
+  const list = document.getElementById('video-list');
+  const items = await getOrderedDocs('videos');
+  if(items.length===0){ list.innerHTML = '<div class="empty">अभी कोई वीडियो नहीं है।</div>'; return; }
+  list.innerHTML = items.map(i => `
+    <div class="item-row">
+      <img src="https://img.youtube.com/vi/${i.videoId}/mqdefault.jpg">
+      <div class="info"><h4>${i.title||''}</h4><p>${i.description||''}</p></div>
+      <div class="actions"><button class="btn btn-danger" data-id="${i.id}">हटाएं</button></div>
+    </div>`).join('');
+  list.querySelectorAll('button').forEach(b => b.addEventListener('click', () => removeItem('videos', b.dataset.id, loadVideos)));
+}
+
+/* ---------- Articles ---------- */
+document.getElementById('article-file').addEventListener('change', (e) => {
+  uploadImage(e.target.files[0], 'article-upload-status', 'article-preview').then(url => {
+    if(url) document.getElementById('article-url').value = url;
+  });
+});
+document.getElementById('article-add-btn').addEventListener('click', async () => {
+  const image = document.getElementById('article-url').value.trim();
+  const date = document.getElementById('article-date').value.trim();
+  const title = document.getElementById('article-title').value.trim();
+  const content = document.getElementById('article-content').value.trim();
+  if(!title || !content){ toast('कृपया शीर्षक और लेख दोनों भरें।', true); return; }
+  try{
+    const order = await nextOrder('articles');
+    await addDoc(collection(db,'articles'), { image, date, title, content, order, createdAt: serverTimestamp() });
+    toast('लेख जोड़ा गया।');
+    ['article-url','article-date','article-title','article-content'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('article-preview').style.display='none';
+    loadArticles(); loadAllCounts();
+  }catch(e){ toast('जोड़ने में समस्या हुई। Login जांचें।', true); }
+});
+async function loadArticles(){
+  const list = document.getElementById('article-list');
+  const items = await getOrderedDocs('articles');
+  if(items.length===0){ list.innerHTML = '<div class="empty">अभी कोई लेख नहीं है।</div>'; return; }
+  list.innerHTML = items.map(i => `
+    <div class="item-row">
+      <img src="${i.image || 'https://via.placeholder.com/70x70?text=%20'}">
+      <div class="info"><h4>${i.title||''}</h4><p>${i.content||''}</p></div>
+      <div class="actions"><button class="btn btn-danger" data-id="${i.id}">हटाएं</button></div>
+    </div>`).join('');
+  list.querySelectorAll('button').forEach(b => b.addEventListener('click', () => removeItem('articles', b.dataset.id, loadArticles)));
+}
+
+/* ---------- Leaders ---------- */
+document.getElementById('leader-file').addEventListener('change', (e) => {
+  uploadImage(e.target.files[0], 'leader-upload-status', 'leader-preview').then(url => {
+    if(url) document.getElementById('leader-url').value = url;
+  });
+});
+document.getElementById('leader-add-btn').addEventListener('click', async () => {
+  const image = document.getElementById('leader-url').value.trim();
+  const name = document.getElementById('leader-name').value.trim();
+  const post = document.getElementById('leader-post').value.trim();
+  if(!image || !name || !post){ toast('कृपया फ़ोटो, नाम और पदनाम तीनों भरें।', true); return; }
+  try{
+    const order = await nextOrder('leaders');
+    await addDoc(collection(db,'leaders'), { image, name, post, order, createdAt: serverTimestamp() });
+    toast('पदाधिकारी जोड़ा गया।');
+    ['leader-url','leader-name','leader-post'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('leader-preview').style.display='none';
+    loadLeaders(); loadAllCounts();
+  }catch(e){ toast('जोड़ने में समस्या हुई। Login जांचें।', true); }
+});
+async function loadLeaders(){
+  const list = document.getElementById('leader-list');
+  const items = await getOrderedDocs('leaders');
+  if(items.length===0){ list.innerHTML = '<div class="empty">अभी कोई पदाधिकारी नहीं है।</div>'; return; }
+  list.innerHTML = items.map(i => `
+    <div class="item-row">
+      <img src="${i.image}">
+      <div class="info"><h4>${i.name||''}</h4><p>${i.post||''}</p></div>
+      <div class="actions"><button class="btn btn-danger" data-id="${i.id}">हटाएं</button></div>
+    </div>`).join('');
+  list.querySelectorAll('button').forEach(b => b.addEventListener('click', () => removeItem('leaders', b.dataset.id, loadLeaders)));
+}
+
+/* ---------- Stats ---------- */
+async function loadStats(){
+  try{
+    const snap = await getDoc(doc(db,'settings','stats'));
+    const data = snap.exists() ? snap.data() : { users:5000, villages:120, meetings:350 };
+    document.getElementById('stat-users').value = data.users || 0;
+    document.getElementById('stat-villages').value = data.villages || 0;
+    document.getElementById('stat-meetings').value = data.meetings || 0;
+  }catch(e){}
+}
+document.getElementById('stats-save-btn').addEventListener('click', async () => {
+  const users = Number(document.getElementById('stat-users').value) || 0;
+  const villages = Number(document.getElementById('stat-villages').value) || 0;
+  const meetings = Number(document.getElementById('stat-meetings').value) || 0;
+  try{
+    await setDoc(doc(db,'settings','stats'), { users, villages, meetings });
+    toast('आंकड़े सुरक्षित कर दिए गए।');
+  }catch(e){ toast('Save नहीं हो पाया। Login जांचें।', true); }
+});
+
+/* ---------- One-time seed of old hardcoded content ---------- */
+document.getElementById('seed-btn').addEventListener('click', async () => {
+  if(!confirm('यह पुराना डेटा एक बार Firestore में जोड़ देगा। सिर्फ पहली बार चलाएं — फिर से चलाने पर डुप्लीकेट बन जाएंगे। जारी रखें?')) return;
+  const oldGallery = [
+    { image:'IMG_20260524_071717.jpg', title:'राष्ट्रीय एकता एवं युवा जागरण', description:'समाज में भाईचारा, समानता और युवाओं को राष्ट्र निर्माण के लिए प्रेरित करने का संदेश।' },
+    { image:'IMG_20260524_071733.jpg', title:'संगठन नेतृत्व परिचय', description:'किसान मजदूर एकता संगठन के नेतृत्व और सामाजिक समर्पण की प्रेरणादायक झलक।' },
+    { image:'IMG_20260524_071751.jpg', title:'किसान मजदूर एकता सम्मेलन', description:'किसानों और मजदूरों की आवाज़ को मजबूत बनाने हेतु आयोजित विशाल कार्यक्रम।' },
+    { image:'IMG_20260524_071901.jpg', title:'सम्मान समारोह', description:'समाजसेवियों एवं जनप्रतिनिधियों के साथ किसान हित चर्चा एवं सम्मान समारोह।' },
+    { image:'IMG_20260524_071917.jpg', title:'जनप्रतिनिधियों से मुलाकात', description:'किसानों और युवाओं की समस्याओं को प्रशासन तक पहुंचाने हेतु विशेष बैठक।' },
+    { image:'IMG_20260524_071931.jpg', title:'जनजागरूकता अभियान', description:'ग्रामीण क्षेत्रों में किसानों और मजदूरों को जागरूक करने का अभियान।' },
+    { image:'IMG_20260524_071955.jpg', title:'SDM कार्यालय बैठक', description:'किसान हित और जनसमस्याओं को प्रशासन के समक्ष मजबूती से रखने हेतु संवाद।' },
+    { image:'IMG_20260524_072010.jpg', title:'सामाजिक विकास कार्यक्रम', description:'ग्रामीण विकास और सामाजिक सहयोग हेतु आयोजित जनसंपर्क कार्यक्रम।' },
+  ];
+  const oldVideos = [
+    { videoId:'CipLc3D5qhw', title:'🚩 संगठन अभियान वीडियो', description:'किसानों और मजदूरों की आवाज़ को मजबूत बनाने हेतु विशेष अभियान।' },
+    { videoId:'7lQpeNaK4yQ', title:'🌾 किसान जनजागरूकता', description:'ग्रामीण क्षेत्रों में जागरूकता और संगठन विस्तार कार्यक्रम।' },
+    { videoId:'A914HiFpqt8', title:'📢 सामाजिक कार्यक्रम', description:'जनहित और किसान समर्थन से जुड़ी महत्वपूर्ण गतिविधियां।' },
+    { videoId:'lUQTo_GSQH0', title:'🤝 संगठन बैठक', description:'संगठन द्वारा आयोजित विशेष बैठक और जनसंवाद कार्यक्रम।' },
+    { videoId:'xM4zEstRG64', title:'👨‍🌾 किसान एकता संदेश', description:'किसानों और युवाओं को एकजुट करने का प्रेरणादायक संदेश।' },
+    { videoId:'pdI3wOlRUbI', title:'🌟 जनहित अभियान', description:'समाज सेवा और किसान हित से जुड़ी विशेष गतिविधियां।' },
+    { videoId:'FLHlc7Qvb8k', title:'🚜 ग्रामीण विकास कार्यक्रम', description:'ग्रामीण विकास और सामाजिक सहयोग का प्रेरणादायक अभियान।' },
+    { videoId:'0834Lp5IGkQ', title:'📍 किसान समर्थन यात्रा', description:'किसानों की समस्याओं और अधिकारों को लेकर विशेष कार्यक्रम।' },
+    { videoId:'nn5v8kw8jY0', title:'🔥 विशेष जनसभा', description:'संगठन की महत्वपूर्ण जनसभा और जागरूकता अभियान।' },
+    { videoId:'HNBo4GKCZbw', title:'💚 किसान मजदूर एकता', description:'एकता, सम्मान और समाज सेवा का प्रेरणादायक संदेश।' },
+  ];
+  try{
+    let order = await nextOrder('gallery');
+    for(const g of oldGallery){ await addDoc(collection(db,'gallery'), { ...g, order: order++, createdAt: serverTimestamp() }); }
+    order = await nextOrder('videos');
+    for(const v of oldVideos){ await addDoc(collection(db,'videos'), { ...v, order: order++, createdAt: serverTimestamp() }); }
+    await setDoc(doc(db,'settings','stats'), { users:5000, villages:120, meetings:350 }, { merge:true });
+    toast('पुराना डेटा सफलतापूर्वक जोड़ दिया गया।');
+    loadGallery(); loadVideos(); loadStats(); loadAllCounts();
+  }catch(e){ toast('Import में समस्या हुई। Login जांचें।', true); }
+});
+</script>
+</body>
+</html>
